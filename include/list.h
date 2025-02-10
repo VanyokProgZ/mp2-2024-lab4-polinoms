@@ -47,8 +47,7 @@ public:
 //	List structure:
 // 
 //		[head]	[pFirst] [] [] [] [] [] [] [pLast]
-//				   /\						 /\
-//				 begin()					last()
+//
 
 template <typename val_>
 class List {
@@ -77,13 +76,13 @@ public:
 		if (pFirst == nullptr) {
 			throw std::out_of_range("ITERATOR OUT OF RANGE");
 		}
-		return Iterator_L<val_>(*this, *pFirst);
+		return Iterator_L<val_>(*this, *pFirst);	//REMEMBER MAKE NULLPTR!!!!!!!!!!!!!!!!!!!!!
 	}
 	Iterator_L<val_> last() const {	//on last element (not like end())
 		if (pLast == nullptr) {
 			throw std::out_of_range("ITERATOR OUT OF RANGE");
 		}
-		return Iterator_L<val_>(*this, *pLast);
+		return Iterator_L<val_>(*this, *pLast);	//REMEMBER MAKE NULLPTR!!!!!!!!!!!!!!!!!!!!! if u check code and see this, pls dm me
 	}
 	
 //constructors--------------------------
@@ -124,6 +123,20 @@ public:
 		else {
 			head = new node();
 		}
+	}
+	List(const val_& right_) {
+		head = new node();
+		pFirst = nullptr;
+		pLast = nullptr;
+		this->push_back(right_);
+	}
+	List(const size_t& sz, const val_& right_) {
+		head = new node();
+		pFirst = nullptr;
+		pLast = nullptr;
+		size_t r = sz;
+		while(r--)
+		this->push_back(right_);
 	}
 	~List() {
 		this_node = head->next;
@@ -357,6 +370,17 @@ public:
 		}
 		pFirst = pLast = nullptr;
 	}
+	bool check_sorted() const{
+		auto it1 = begin(), it2 = begin();
+		if (it1 == last())return true;
+		++it2;
+		while (true) {
+			if (*it2 < *it1) return false;
+			if (it2 == last()) break;
+			++it1; ++it2;
+		}
+		return true;
+	}
 	void merge_sort() {
 		if (pLast == pFirst || pFirst == nullptr) return;
 		vector<List<val_>> arr; 
@@ -380,11 +404,12 @@ public:
 		}
 	}
 #undef out_del_range_exc(a)
-	template<class T>friend std::ostream& operator<<(std::ostream& os, List<T>& list_) {
-		list_.this_node = list_.pFirst;
-		while (list_.this_node != nullptr) {
-			os << list_.this_node->data << ' ';
-			list_.this_node = list_.this_node->next;
+	friend std::ostream& operator<<(std::ostream& os, const List<val_>& list_) {
+		node* local_this_node;
+		local_this_node = list_.pFirst;
+		while (local_this_node != nullptr) {
+			os << local_this_node->data << ' ';
+			local_this_node = local_this_node->next;
 		}
 		return os;
 	}
