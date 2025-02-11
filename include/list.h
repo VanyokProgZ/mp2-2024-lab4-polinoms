@@ -248,7 +248,7 @@ public:
 		return res;
 	}
 	List<val_> operator-(const List& right_) = delete;
-	void operator=(const List& right_) {
+	List& operator=(const List& right_) {
 		size_t sz_l = size(), sz_r = right_.size();
 		while (sz_l < sz_r) {
 			sz_l++;
@@ -266,6 +266,7 @@ public:
 			stepUp();
 			rtmp = rtmp->next;
 		}
+		return *this;
 	}
 #define out_del_range_exc(a) if (head->next == nullptr) {throw std::out_of_range(("cant delete "+std::string(a)+" element from empty object"));}	//!a must be string! and exception situation on the conscience of the developer
 	void pop_front() {

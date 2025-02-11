@@ -7,6 +7,7 @@ int main() {
 	int n, m; cin >> n >> m;
 	Polinome<int> a(n), b(m);
 	cin >> a >> b;
-	auto c = a + b;
-	cout << c << endl;
+	cout << a << endl << b << endl;
+
+	cout << (a + b) << endl << (a - b) << endl << a * (-228) << endl;
 }

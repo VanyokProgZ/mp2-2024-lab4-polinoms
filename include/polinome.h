@@ -40,6 +40,7 @@ struct Monom {
 		Degree operator-(const Degree& right_) { if (degree + right_.degree > 999) throw std::length_error("INCORRECT DEGREE"); return Degree(degree - right_.degree); }
 		Degree operator*(const Degree& right_) { if (degree + right_.degree > 999) throw std::length_error("INCORRECT DEGREE"); return Degree(degree * right_.degree); }
 		Degree operator/(const Degree& right_) { if (degree + right_.degree > 999 || (degree < right_.degree) || (degree % right_.degree != 0)) throw std::length_error("INCORRECT DEGREE"); return Degree(degree * right_.degree); }
+		Degree& operator=(const Degree& right_) { degree = right_.degree; return *this; }
 
 		size_t get()const noexcept{ return degree; }
 		size_t getX() const noexcept { return degree / 100; }
@@ -95,9 +96,20 @@ struct Monom {
 		if (DEGREE != right_.DEGREE) throw std::logic_error("different degree!");
 		return Monom(C * right_.C, DEGREE);
 	}
+	Monom operator*(const T& right_) {
+		return Monom(right_ * C, DEGREE);
+	}
 	Monom operator/(const Monom& right_) {
 		if (DEGREE != right_.DEGREE) throw std::logic_error("different degree!");
 		return Monom(C / right_.C, DEGREE);
+	}
+	Monom operator/(const T& right_) {
+		return Monom(right_ / C, DEGREE);
+	}
+	Monom& operator=(const Monom& right_) {
+		C = right_.C;
+		DEGREE = right_.DEGREE;
+		return *this;
 	}
 	friend std::ostream& operator<<(std::ostream& os, const Monom<T>& right_) {
 		if (right_.value() != T(0)) {
@@ -176,7 +188,19 @@ public:
 
 	void push_back(const Monom<val_>& right_) { polinome.push_back(right_); }
 
-	Polinome operator+(const Polinome& right_) {
+	Polinome& operator=(const Polinome& right_) {
+		polinome.operator=(right_.polinome);
+		return *this;
+	}
+	Polinome operator*(const val_& right_)const {
+		auto res = Polinome(*this);
+		for (auto it = res.begin();; ++it) {
+			(*it) = (*it) * right_;
+			if (it == res.last())break;
+		}
+		return res;
+	}
+	Polinome operator+(const Polinome& right_) const{
 		if (!check_sorted() || !right_.check_sorted()) throw j_error("Polinoms must be sorted for +");
 		
 		auto it1 = begin();
@@ -190,30 +214,32 @@ public:
 				if (!(abs(((*it1).value() + (*it2).value()) - null_) <= numeric_limits<val_>::epsilon())) {
 					res.push_back(Monom<val_>((*it1).value() + (*it2).value(), (*it1).DEGREE.get()));
 				}
-				if (it1 == last() || it2 == right_.last())break;
+				if (it1 == last() && it2 == right_.last()) { f1 = f2 = 0; break; };
+				if (it1 == last()) { f1 = 0; ++it2; break; }
+				if (it2 == right_.last()) { f2 = 0; ++it1; break; }
 				++it1;
 				++it2;
 				
 			}
 			else if (*it1 < *it2) {
 				res.push_back(*it1);
-				if (it1 == last())break;
+				if (it1 == last()) { f1 = 0; break; }
 				++it1;
 			}
 			else {
 				res.push_back(*it2);
-				if (it2 == right_.last())break;
+				if (it2 == right_.last()) { f2 = 0; break; }
 				++it2;
 			}
 			
 		}
-		if(it1!=last())
+		if(f1)
 		while (true) {
 			res.push_back(*it1);
 			if (it1 == last())break;
 			++it1;
 		}
-		if (it2 != right_.last())
+		if (f2)
 			while (true) {
 				res.push_back(*it2);
 				if (it2 == right_.last())break;
@@ -224,7 +250,9 @@ public:
 		}*/
 		return res;
 	}
-
+	Polinome operator-(const Polinome& right_) const{
+		return operator+(right_ * val_(-1));
+	}
 	friend std::ostream& operator<<(std::ostream& os, const Polinome<val_>& p) {
 		size_t lgth = 0;
 		if (p.size() == 0) {
@@ -233,7 +261,8 @@ public:
 		}
 		for (auto it = p.begin();; ++it) {
 			auto right_Monom = *it;
-			if (lgth) os << ((right_Monom.value() > val_(0)) ? ("+ ") : ((right_Monom.value() < val_(0)) ? "- " : ""));
+			if (lgth) os << ((right_Monom.value()> val_(0)) ? ("+ ") : ((right_Monom.value() < val_(0)) ? "- " : ""));
+			else { os << (right_Monom.value() < val_(0) ? "- " : ""); }
 			++lgth;
 			
 			os << right_Monom;
@@ -250,6 +279,9 @@ public:
 		vector<std::string> prepare;
 		for (size_t i = 0; i < n; i++) {
 			if (raw_input[i] == ' ') continue;
+			if (i > 0 && vars(raw_input.at(i)) && vars(prepare.back().at(0))) {
+				throw j_error("Two polinoms without operation between!");
+			}
 			if (_dig(raw_input[i])) {
 				std::string temp = "";
 				while (i < n && !vars(raw_input[i]) && !oper(raw_input[i]) && raw_input[i] != ' ') {
@@ -323,6 +355,9 @@ public:
 				}
 			}
 		}
+		for (auto i = 1; i < post.size(); i++) {
+			if (post.at(i).type == post.at(i - 1).type) throw j_error("Неправильный ввод: за '" + post.at(i - 1).name + "' не может идти '" + post.at(i).name + "'");
+		}
 		//теперь post имеет логическое разделение на знаки, числа, переменные, степени
 		//собираем мономы - каждый из них имеет в начале либо - либо +
 		vector<Monom<val_>> psevdPolinom;
@@ -335,9 +370,18 @@ public:
 			if (post.at(i).name == "-") pos = 0;
 			
 			++i;
-			Co = parser(post.at(i).name);
-			if (!pos) Co = -Co;
-			++i;
+			if (post.at(i).type == 2) {
+				Co = parser(post.at(i).name);
+				if (!pos) Co = -Co;
+				++i;
+			}
+			else if (post.at(i).type == 3) {
+				Co = val_(1);
+				if (!pos) Co = -Co;
+			}
+			else {
+			
+			}
 			
 			for (int j = 0; j < 3; j++) {
 				if (i == post.size()) break;
@@ -365,7 +409,7 @@ public:
 		}
 		size_t sz1 = p.size();
 		if (sz1 != psevdPolinom.size()) throw j_error("Polinome and input must have equal size!");
-		sz1 = 0;;
+		sz1 = 0;
 		for (auto it = p.begin();; ++it) {
 			*it = psevdPolinom.at(sz1++);
 			if (it == p.last()) break;
