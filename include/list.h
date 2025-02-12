@@ -18,6 +18,7 @@ public:
 
 	bool operator!=(const Iterator_L& it2) const { return this_ptr != it2.this_ptr; };
 	bool operator==(const Iterator_L& it2) const { return this_ptr == it2.this_ptr; };
+	bool isNull() const { return this_ptr == nullptr; }
 	typename Iterator_L<_val>::reference operator*() const { return this_ptr->data; };
 
 	Iterator_L& operator++() {

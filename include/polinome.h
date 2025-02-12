@@ -26,7 +26,9 @@ struct Monom {
 	class Degree {
 		size_t degree;
 	public:
-		Degree(size_t deg = 0) :degree(deg) {}
+		Degree(size_t deg = 0) :degree(deg) {
+			if (degree > 999) throw std::length_error("TO BIG DEGREE");
+		}
 		Degree(const Degree& deg) :degree(deg.degree) {};
 		~Degree() {}
 		bool operator<=(const Degree& right_) { return degree <= right_.degree; }
@@ -49,13 +51,13 @@ struct Monom {
 
 		void set(size_t deg) { if (deg > 999)throw std::length_error("TO BIG DEGREE"); degree = deg; }
 		void setX(size_t deg) { if (deg > 9 || ((degree - degree / 100) + deg * 100) > 999)throw std::length_error("TO BIG DEGREEE"); degree = ((degree - degree / 100) + deg * 100); }
-		void setY(size_t deg) { if (deg > 9 || ((degree - ((degree - (degree / 100)*100) / 10)) + deg * 10) > 999)throw std::length_error("TO BIG DEGREE"); degree = ((degree - ((degree - degree / 100) / 10)) + deg * 10); }
+		void setY(size_t deg) { if (deg > 9 || ((degree - ((degree - (degree / 100) * 100) / 10)) + deg * 10) > 999)throw std::length_error("TO BIG DEGREE"); degree = degree - getY() * 10 + deg * 10; }
 		void setZ(size_t deg) { if (deg > 9 || ((degree - degree % 10) + deg) > 999)throw std::length_error("TO BIG DEGREE"); degree = ((degree - degree % 10) + deg); }
 
 		void add(size_t deg) { operator+(deg); }
-		void addX(size_t deg) { operator+(deg * 100); }
-		void addY(size_t deg) { operator+(deg * 10); }
-		void addZ(size_t deg) { operator+(deg); }
+		void addX(size_t deg) { setX(getX() + deg); }
+		void addY(size_t deg) { setY(getY() + deg); }
+		void addZ(size_t deg) { setZ(getZ() + deg); }
 	};
 
 	Degree DEGREE;
@@ -93,18 +95,18 @@ struct Monom {
 		return Monom(C - right_.C, DEGREE);
 	}
 	Monom operator*(const Monom& right_) {
-		if (DEGREE != right_.DEGREE) throw std::logic_error("different degree!");
-		return Monom(C * right_.C, DEGREE);
+		Degree D;
+		D.setX(DEGREE.getX() + right_.DEGREE.getX());
+		D.setY(DEGREE.getY() + right_.DEGREE.getY());
+		D.setZ(DEGREE.getZ() + right_.DEGREE.getZ());
+		return Monom(C * right_.C, D);
 	}
 	Monom operator*(const T& right_) {
 		return Monom(right_ * C, DEGREE);
 	}
-	Monom operator/(const Monom& right_) {
-		if (DEGREE != right_.DEGREE) throw std::logic_error("different degree!");
-		return Monom(C / right_.C, DEGREE);
-	}
+	
 	Monom operator/(const T& right_) {
-		return Monom(right_ / C, DEGREE);
+		return Monom(C/right_, DEGREE);
 	}
 	Monom& operator=(const Monom& right_) {
 		C = right_.C;
@@ -115,11 +117,11 @@ struct Monom {
 		if (right_.value() != T(0)) {
 			os << abs(right_.value());
 			size_t X = right_.DEGREE.getX(), Y = right_.DEGREE.getY(), Z = right_.DEGREE.getZ();
-			if (X) os << "X";
+			if (X) os << "x";
 			if (X != 1 && X) os << X;
-			if (Y) os << "Y";
+			if (Y) os << "y";
 			if (Y != 1 && Y) os << Y;
-			if (Z) os << "Z";
+			if (Z) os << "z";
 			if (Z != 1 && Z) os << Z;
 			os << ' ';
 		}
@@ -183,6 +185,36 @@ public:
 	void clear() { polinome.clear(); }
 
 	void SORT() { polinome.merge_sort(); }
+
+	void make_uniq() {
+		SORT();
+		Polinome<val_> temp(0);
+		auto it = begin();
+		if (temp.size()==0) {
+			temp.push_back(*it);
+			++it;
+		}
+		while (true) {
+			if (*it == *(temp.last())) {
+				(*(temp.last())).valueAdd((*it).value());
+			}
+			else {
+				temp.push_back(*it);
+			}
+			if (it == last())break;
+			++it;
+		}
+		clear();
+		auto null_ = val_(0);
+		it = temp.begin();
+		for (;; ++it) {
+			if ((*it).value() != null_) {
+				push_back(*it);
+			}
+			if (it == temp.last())break;
+		}
+		return;
+	}
 
 	bool check_sorted() const{ return polinome.check_sorted(); }
 
@@ -252,6 +284,20 @@ public:
 	}
 	Polinome operator-(const Polinome& right_) const{
 		return operator+(right_ * val_(-1));
+	}
+	Polinome operator*(const Polinome& right_)const {
+		
+		Polinome<val_> res(0);
+
+		for (auto it1 = begin();; ++it1) {
+			for (auto it2 = right_.begin();; ++it2) {
+				res.push_back((*it1) * (*it2));
+				if (it2 == right_.last())break;
+			}
+			if (it1 == last())break;
+		}
+		res.make_uniq();
+		return res;
 	}
 	friend std::ostream& operator<<(std::ostream& os, const Polinome<val_>& p) {
 		size_t lgth = 0;
@@ -327,6 +373,7 @@ public:
 						++i; ++x;
 						std::string degree = "";
 						while (i < lex.size() && _dig(lex.at(i))) degree += lex.at(i++);
+						if (degree.size() > 1) throw j_error("X degree cant be more 9!");
 						--i;
 						post.push_back({ 3,"X"});
 						post.push_back({4,degree});
@@ -336,6 +383,7 @@ public:
 						++i; ++y;
 						std::string degree = "";
 						while (i < lex.size() && _dig(lex.at(i))) degree += lex.at(i++);
+						if (degree.size() > 1) throw j_error("Y degree cant be more 9!");
 						--i;
 						post.push_back({ 3,"Y" });
 						post.push_back({ 4,degree });
@@ -346,6 +394,7 @@ public:
 						++i; ++z;
 						std::string degree = "";
 						while (i < lex.size() && _dig(lex.at(i))) degree += lex.at(i++);
+						if (degree.size() > 1) throw j_error("Z degree cant be more 9!");
 						--i;
 						post.push_back({ 3,"Z" });
 						post.push_back({ 4,degree });
@@ -356,7 +405,7 @@ public:
 			}
 		}
 		for (auto i = 1; i < post.size(); i++) {
-			if (post.at(i).type == post.at(i - 1).type) throw j_error("Неправильный ввод: за '" + post.at(i - 1).name + "' не может идти '" + post.at(i).name + "'");
+			if (post.at(i).type == post.at(i - 1).type) throw j_error("Incorrect input: after '" + post.at(i - 1).name + "' cant be '" + post.at(i).name + "'");
 		}
 		//теперь post имеет логическое разделение на знаки, числа, переменные, степени
 		//собираем мономы - каждый из них имеет в начале либо - либо +
@@ -414,7 +463,7 @@ public:
 			*it = psevdPolinom.at(sz1++);
 			if (it == p.last()) break;
 		}
-		p.SORT();
+		p.make_uniq();
 		return is;
 	}
 };
