@@ -77,13 +77,13 @@ public:
 		if (pFirst == nullptr) {
 			throw std::out_of_range("ITERATOR OUT OF RANGE");
 		}
-		return Iterator_L<val_>(*this, *pFirst);	//REMEMBER MAKE NULLPTR!!!!!!!!!!!!!!!!!!!!!
+		return Iterator_L<val_>(*this, *pFirst);
 	}
 	Iterator_L<val_> last() const {	//on last element (not like end())
 		if (pLast == nullptr) {
 			throw std::out_of_range("ITERATOR OUT OF RANGE");
 		}
-		return Iterator_L<val_>(*this, *pLast);	//REMEMBER MAKE NULLPTR!!!!!!!!!!!!!!!!!!!!! if u check code and see this, pls dm me
+		return Iterator_L<val_>(*this, *pLast);
 	}
 	
 //constructors--------------------------
@@ -186,8 +186,8 @@ public:
 	void insert(size_t pos, const val_& _val) {
 		node* tmp = new node(_val);
 		this_node = head;
-		for (size_t i = 0; i < pos; i++) {
-			if (this_node->next == nullptr && i < pos - 1) {
+ 		for (size_t i = 0; i < pos; i++) {
+			if (this_node->next == nullptr && i <= pos - 1) {
 				throw std::out_of_range("List out of range");
 			}
 			stepUp();
@@ -241,6 +241,9 @@ public:
 		return this_node->next->data;
 	}
 	List<val_> operator+(const List& right_) const {
+		if (right_.pFirst==nullptr && pFirst==nullptr) { return List<val_>({}); }
+		else if (right_.pFirst==nullptr) { return List<val_>(*this); }
+		else if (pFirst==nullptr) { return List<val_>(right_); }
 		List<val_> res(*this);
 		for (auto it = right_.begin();; ++it) {
 			res.push_back(*it);
@@ -268,6 +271,21 @@ public:
 			rtmp = rtmp->next;
 		}
 		return *this;
+	}
+	bool operator==(const List& right_) const{
+		if (size() == 0 && right_.size() == 0) return true;
+		if (size() != right_.size()) {
+			return false;
+		}
+		auto it1 = begin(), it2 = right_.begin();
+		for (;; ++it1, ++it2) {
+			if (*it1 != *it2)return false;
+			if (it1 == last())break;
+		}
+		return true;
+	}
+	bool operator!=(const List& right_) const {
+		return !((*this).operator==(right_));
 	}
 #define out_del_range_exc(a) if (head->next == nullptr) {throw std::out_of_range(("cant delete "+std::string(a)+" element from empty object"));}	//!a must be string! and exception situation on the conscience of the developer
 	void pop_front() {
@@ -325,6 +343,10 @@ public:
 		}
 	}
 	List sorted_merge(const List& left_, const List& right_) {
+		
+		if (right_.pFirst == nullptr && left_.pFirst == nullptr) { return List(); }
+		else if (left_.pFirst == nullptr) { return List(right_); }
+		else if (right_.pFirst == nullptr) { return List(left_); }
 		List<val_> res;
 		auto p1 = left_.begin(), p2 = right_.begin(), e1 = left_.last(), e2 = right_.last();
 		bool f1 = true, f2 = true;
@@ -373,6 +395,7 @@ public:
 		pFirst = pLast = nullptr;
 	}
 	bool check_sorted() const{
+		if (pFirst == nullptr) return true;
 		auto it1 = begin(), it2 = begin();
 		if (it1 == last())return true;
 		++it2;
@@ -406,7 +429,7 @@ public:
 		}
 	}
 #undef out_del_range_exc(a)
-	friend std::ostream& operator<<(std::ostream& os, const List<val_>& list_) {
+	/*friend std::ostream& operator<<(std::ostream& os, const List<val_>& list_) {
 		node* local_this_node;
 		local_this_node = list_.pFirst;
 		while (local_this_node != nullptr) {
@@ -414,5 +437,5 @@ public:
 			local_this_node = local_this_node->next;
 		}
 		return os;
-	}
+	}*/
 };
