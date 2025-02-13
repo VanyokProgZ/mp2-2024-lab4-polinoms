@@ -225,7 +225,7 @@ double re_ans(std::string& s) {
 
 
 
-double parser(std::string& s) {
+double parser_My(std::string& s) {
 	std::string err = "";
 	if (!dfs(s, 0, 1)) {
 		throw j_error("invalid digit writting");

@@ -1,5 +1,3 @@
-//VECTOR FROM LAB-3
-
 #pragma once
 #include <initializer_list>
 #include <iostream>

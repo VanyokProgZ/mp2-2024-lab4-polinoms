@@ -8,7 +8,6 @@ struct psevdo_lexem {
 	std::string name;
 	psevdo_lexem() :type(0), name("") {};
 	psevdo_lexem(short t, const std::string& s) :type(t), name(s) {};
-	
 };
 //std::ostream& operator<<(std::ostream& os, psevdo_lexem& pl) {
 //	std::cout << pl.name;
@@ -59,7 +58,7 @@ struct Monom {
 		void addY(size_t deg) { big_degree(deg,9); big_degree(deg + getY(), 9); (*this).setY(getY() + deg); }
 		void addZ(size_t deg) { big_degree(deg,9); big_degree(deg + getZ(), 9); (*this).setZ(getZ() + deg); }
 	};
-
+#undef big_degree(a,b)
 	Degree DEGREE;
 
 	Monom() :DEGREE(000), C(T()) {}
@@ -83,8 +82,8 @@ struct Monom {
 	bool LE(const Monom& right_) { if (DEGREE != right_.DEGREE) throw std::logic_error("different degree!"); return C <= right_.C; }	//<=
 
 	T value() const noexcept { return C; }
-	void valueAdd(const T& right_) { C = C + right_; }
-	void valueSet(const T& right_) { C = right_; }
+	void valueAdd(const T& right_) noexcept{ C = C + right_; }
+	void valueSet(const T& right_) noexcept{ C = right_; }
 
 	Monom operator+(const Monom& right_) {
 		if (DEGREE != right_.DEGREE) throw std::logic_error("different degree!");
@@ -138,19 +137,9 @@ private:
 #define oper(a) ((a)=='+' || (a)=='-')
 #define allow(a) (oper(a) || _dig(a) || vars(a) || (a)==' ' || (a)=='.' || (a)=='e' || (a)=='E')
 
-bool check_allow_main_symb(const std::string& s) {	//check all nums or vars in string
-	for (const auto& el : s) {
-		if (!_dig(el) && !vars(el)) return 0;
-	}
-	return 1;
-}
+bool check_allow_main_symb(const std::string& s);
 
-bool all_Nums(const std::string& s) {	//check all nums in string
-	for (const auto& el : s) {
-		if (!_dig(el)) return 0;
-	}
-	return 1;
-}
+bool all_Nums(const std::string& s);
 
 template <typename val_>
 class Polinome {
@@ -163,6 +152,7 @@ public:
 	Polinome(const List<Monom<val_>>& right_) : polinome(right_) {}
 	Polinome(const List<val_>& right_) : polinome(){
 		size_t sz = 0;
+		if(right_.size())
 		for (auto it = right_.begin();; ++it) {
 			polinome.push_back(Monom<val_>(*it,++sz));
 			if (it == right_.last()) break;
@@ -178,7 +168,7 @@ public:
 		return polinome.last();
 	}
 
-	const List<Monom<val_>>& getList()const {
+	const List<Monom<val_>>& getList()const noexcept{
 		return polinome;
 	}
 	size_t size() const { return polinome.size(); }
@@ -221,6 +211,9 @@ public:
 
 	void push_back(const Monom<val_>& right_) { polinome.push_back(right_); }
 
+	bool operator==(const Polinome& right_)const {
+		return polinome == right_.polinome;
+	}
 	Polinome& operator=(const Polinome& right_) {
 		if (&right_ == this)return *this;
 		polinome.operator=(right_.polinome);
@@ -235,7 +228,7 @@ public:
 		return res;
 	}
 	Polinome operator+(const Polinome& right_) const{
-		if (!check_sorted() || !right_.check_sorted()) throw j_error("Polinoms must be sorted for +");
+		if (!check_sorted() || !right_.check_sorted()) throw std::logic_error("Polinoms must be sorted for + ");
 		
 		auto it1 = begin();
 		auto it2 = right_.begin();
@@ -245,7 +238,7 @@ public:
 		while (true) {
 
 			if (*it1 == *it2) {
-				if (!(abs(((*it1).value() + (*it2).value()) - null_) <= numeric_limits<val_>::epsilon())) {
+				if (!(abs(((*it1).value() + (*it2).value()) - null_) <= std::numeric_limits<val_>::epsilon())) {
 					res.push_back(Monom<val_>((*it1).value() + (*it2).value(), (*it1).DEGREE.get()));
 				}
 				if (it1 == last() && it2 == right_.last()) { f1 = f2 = 0; break; };
@@ -284,6 +277,7 @@ public:
 		return res;
 	}
 	Polinome operator-(const Polinome& right_) const{
+		if (!check_sorted() || !right_.check_sorted()) throw std::logic_error("Polinoms must be sorted for - ");
 		return operator+(right_ * val_(-1));
 	}
 	Polinome operator*(const Polinome& right_)const {
@@ -421,7 +415,7 @@ public:
 			
 			++i;
 			if (post.at(i).type == 2) {
-				Co = parser(post.at(i).name);
+				Co = parser_My(post.at(i).name);
 				if (!pos) Co = -Co;
 				++i;
 			}
@@ -437,19 +431,19 @@ public:
 				if (i == post.size()) break;
 				if (post.at(i).name == "X") {
 					++i;
-					degreE += parser(post.at(i).name) * 100;
+					degreE += parser_My(post.at(i).name) * 100;
 					++i;
 				}
 				if (i == post.size())break;
 				if (post.at(i).name == "Y") {
 					++i;
-					degreE += parser(post.at(i).name) * 10;
+					degreE += parser_My(post.at(i).name) * 10;
 					++i;
 				}
 				if (i == post.size())break;
 				if (post.at(i).name == "Z") {
 					++i;
-					degreE += parser(post.at(i).name);
+					degreE += parser_My(post.at(i).name);
 					++i;
 				}
 				if (i == post.size() || oper(post.at(i).name.at(0)))break;
