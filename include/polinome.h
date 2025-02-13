@@ -10,54 +10,54 @@ struct psevdo_lexem {
 	psevdo_lexem(short t, const std::string& s) :type(t), name(s) {};
 	
 };
-std::ostream& operator<<(std::ostream& os, psevdo_lexem& pl) {
-	std::cout << pl.name;
-	return os;
-}
+//std::ostream& operator<<(std::ostream& os, psevdo_lexem& pl) {
+//	std::cout << pl.name;
+//	return os;
+//}
 //type:
 // 0 - undefined
 // 1 - +/-
 // 2 - Const
 // 3 - variable
 // 4 - degree
-
+#define big_degree(a,b) if ((a)>(b))throw std::length_error("TOO BIG DEGREE")
 template <typename T>
 struct Monom {
 	class Degree {
 		size_t degree;
 	public:
 		Degree(size_t deg = 0) :degree(deg) {
-			if (degree > 999) throw std::length_error("TO BIG DEGREE");
+			if (degree > 999) throw std::length_error("TOO BIG DEGREE");
 		}
 		Degree(const Degree& deg) :degree(deg.degree) {};
-		~Degree() {}
-		bool operator<=(const Degree& right_) { return degree <= right_.degree; }
-		bool operator<(const Degree& right_) { return degree < right_.degree; }
-		bool operator>(const Degree& right_) { return degree > right_.degree; }
-		bool operator>=(const Degree& right_) { return degree >= right_.degree; }
-		bool operator==(const Degree& right_) { return degree == right_.degree; }
-		bool operator!=(const Degree& right_) { return degree != right_.degree; }
+		~Degree() { }
+		bool operator<=(const Degree& right_)const { return degree <= right_.degree; }
+		bool operator<(const Degree& right_) const { return degree < right_.degree; }
+		bool operator>(const Degree& right_) const { return degree > right_.degree; }
+		bool operator>=(const Degree& right_) const { return degree >= right_.degree; }
+		bool operator==(const Degree& right_) const { return degree == right_.degree; }
+		bool operator!=(const Degree& right_) const { return degree != right_.degree; }
 
 		Degree operator+(const Degree& right_) { if (degree + right_.degree > 999) throw std::length_error("TO BIG DEGREE"); return Degree(degree + right_.degree); }
 		Degree operator-(const Degree& right_) { if (degree + right_.degree > 999) throw std::length_error("INCORRECT DEGREE"); return Degree(degree - right_.degree); }
 		Degree operator*(const Degree& right_) { if (degree + right_.degree > 999) throw std::length_error("INCORRECT DEGREE"); return Degree(degree * right_.degree); }
-		Degree operator/(const Degree& right_) { if (degree + right_.degree > 999 || (degree < right_.degree) || (degree % right_.degree != 0)) throw std::length_error("INCORRECT DEGREE"); return Degree(degree * right_.degree); }
-		Degree& operator=(const Degree& right_) { degree = right_.degree; return *this; }
+		Degree operator/(const Degree& right_) { if (degree + right_.degree > 999 || (degree < right_.degree) || (degree % right_.degree != 0)) throw std::length_error("INCORRECT DEGREE"); return Degree(degree / right_.degree); }
+		Degree& operator=(const Degree& right_) { if (&right_ == this)return *this; degree = right_.degree; return *this; }
 
 		size_t get()const noexcept{ return degree; }
 		size_t getX() const noexcept { return degree / 100; }
 		size_t getY() const noexcept { return (degree - (degree / 100)*100) / 10; }
 		size_t getZ() const noexcept { return degree % 10; }
 
-		void set(size_t deg) { if (deg > 999)throw std::length_error("TO BIG DEGREE"); degree = deg; }
-		void setX(size_t deg) { if (deg > 9 || ((degree - degree / 100) + deg * 100) > 999)throw std::length_error("TO BIG DEGREEE"); degree = ((degree - degree / 100) + deg * 100); }
-		void setY(size_t deg) { if (deg > 9 || ((degree - ((degree - (degree / 100) * 100) / 10)) + deg * 10) > 999)throw std::length_error("TO BIG DEGREE"); degree = degree - getY() * 10 + deg * 10; }
-		void setZ(size_t deg) { if (deg > 9 || ((degree - degree % 10) + deg) > 999)throw std::length_error("TO BIG DEGREE"); degree = ((degree - degree % 10) + deg); }
+		void set(size_t deg) { big_degree(deg,999); degree = deg; }
+		void setX(size_t deg) { big_degree(deg,9); degree = ((degree - degree / 100) + deg * 100); }
+		void setY(size_t deg) { big_degree(deg,9); degree = degree - getY() * 10 + deg * 10; }
+		void setZ(size_t deg) { big_degree(deg,9); degree = ((degree - degree % 10) + deg); }
 
-		void add(size_t deg) { operator+(deg); }
-		void addX(size_t deg) { setX(getX() + deg); }
-		void addY(size_t deg) { setY(getY() + deg); }
-		void addZ(size_t deg) { setZ(getZ() + deg); }
+		void add(size_t deg) { big_degree(deg, 999); big_degree(deg + get(), 999); (*this).set(deg + get()); }
+		void addX(size_t deg) { big_degree(deg,9); big_degree(deg + getX(), 9); (*this).setX(getX() + deg); }
+		void addY(size_t deg) { big_degree(deg,9); big_degree(deg + getY(), 9); (*this).setY(getY() + deg); }
+		void addZ(size_t deg) { big_degree(deg,9); big_degree(deg + getZ(), 9); (*this).setZ(getZ() + deg); }
 	};
 
 	Degree DEGREE;
@@ -109,6 +109,7 @@ struct Monom {
 		return Monom(C/right_, DEGREE);
 	}
 	Monom& operator=(const Monom& right_) {
+		if (&right_ == this)return *this;
 		C = right_.C;
 		DEGREE = right_.DEGREE;
 		return *this;
@@ -221,6 +222,7 @@ public:
 	void push_back(const Monom<val_>& right_) { polinome.push_back(right_); }
 
 	Polinome& operator=(const Polinome& right_) {
+		if (&right_ == this)return *this;
 		polinome.operator=(right_.polinome);
 		return *this;
 	}
@@ -250,8 +252,7 @@ public:
 				if (it1 == last()) { f1 = 0; ++it2; break; }
 				if (it2 == right_.last()) { f2 = 0; ++it1; break; }
 				++it1;
-				++it2;
-				
+				++it2;	
 			}
 			else if (*it1 < *it2) {
 				res.push_back(*it1);

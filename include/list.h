@@ -253,6 +253,9 @@ public:
 	}
 	List<val_> operator-(const List& right_) = delete;
 	List& operator=(const List& right_) {
+		if (this == &right_) {
+			return *this;
+		}
 		size_t sz_l = size(), sz_r = right_.size();
 		while (sz_l < sz_r) {
 			sz_l++;

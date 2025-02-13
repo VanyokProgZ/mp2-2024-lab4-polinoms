@@ -37,6 +37,26 @@ TEST(List, copy_constructor_right_values) {
 		if (it1 == a.last())break;
 	}
 }
+TEST(List, correct_copy) {
+	List<int> a = { 1,2,3,4,5 };
+	List<int> b = {5};
+	b = a;
+	ASSERT_EQ(b, a);
+}
+TEST(List, correct_copy_own_mem) {
+	List<int> a = { 1,2,3,4,5 };
+	List<int> b = { 5 };
+	b = a;
+	b[0] = 23;
+	ASSERT_NE(b, a);
+}
+TEST(List, correct_selfcopy) {
+	List<int> a = { 1,2,3,4,5 };
+	List<int> b = { 1,2,3,4,5 };
+	a = a;
+	ASSERT_EQ(a, a);
+	ASSERT_EQ(a, b);
+}
 TEST(List, copy_constructor_own_memory) {
 	List<int> a = { 1,2,3,4,5 };
 	List<int> b(a);
