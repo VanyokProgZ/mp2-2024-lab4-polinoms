@@ -14,6 +14,7 @@ int main() {
 
 			std::string q;
 			std::cout << "The polynomials are entered in the following format: 'CXaYbZc + CYbXaZc - ZcYa + C' ->\nC - const, \nX - 'X or x', Y - 'Y or y', Z-'Z or z';\na,b,c - degrees of X Y Z\n\n ";
+			std::cout << "\nEXAMPLE OF POLINOM: 23x4y6z7 - xyz + 5z - 65yz8\n\n";
 			std::cout << "what to do?\n1 -> polinome + polinome\n2 -> polinome - polinome\n3 -> polinome * polinome\n4 -> polinome * double\nexit -> exit()\nYour choice: ";
 			std::cin >> q;
 			if (q == "1") {
@@ -64,7 +65,8 @@ int main() {
 				std::cout << "Type polinom: ";
 				std::cin >> a;
 				std::cout << "Type const: ";
-				std::cin >> b;
+				std::string r; std::cin >> r;
+				b = parser_My(r);
 				std::cout << "Result polinom * const: " << (a * b) << std::endl;
 			}
 			else if (q == "exit") {
