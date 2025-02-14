@@ -22,6 +22,9 @@ TEST(Degree, can_operator_ravno) {
 	Monom<int>::Degree a(96);
 	Monom<int>::Degree b(69);
 	ASSERT_NO_THROW(a == b);
+}
+TEST(Degree, can_operator_ravno_self) {
+	Monom<int>::Degree a(96);
 	ASSERT_NO_THROW(a == a);
 }
 TEST(Degree, operator_ravno_ravno) {
@@ -38,6 +41,9 @@ TEST(Degree, can_operator_neravno) {
 	Monom<int>::Degree a(96);
 	Monom<int>::Degree b(69);
 	ASSERT_NO_THROW(a != b);
+}
+TEST(Degree, can_operator_neravno_self) {
+	Monom<int>::Degree a(96);
 	ASSERT_NO_THROW(a != a);
 }
 TEST(Degree, operator_neravno_ravno) {
