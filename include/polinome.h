@@ -151,7 +151,7 @@ public:
 	Polinome() : polinome(Monom<val_>()) {};
 	Polinome(const Monom<val_>& right_) : polinome(right_) {};
 	Polinome(const Polinome<val_>& right_) : polinome(right_.polinome) {};
-	Polinome(const List<Monom<val_>>& right_) : polinome(right_) { SORT(); }
+	Polinome(const List<Monom<val_>>& right_) : polinome(right_) { make_uniq(); }
 	Polinome(const List<val_>& right_) : polinome(){
 		size_t sz = 0;
 		if(right_.size())
@@ -183,6 +183,7 @@ public:
 	void make_uniq() {
 		SORT();
 		Polinome<val_> temp(0);
+		if (!size())return;
 		auto it = begin();
 		if (temp.size()==0) {
 			temp.push_back(*it);
