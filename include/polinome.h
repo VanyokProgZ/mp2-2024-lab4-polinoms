@@ -3,6 +3,7 @@
 #include "list.h"
 #include "parse_digits.h"
 
+
 struct psevdo_lexem {
 	short type;
 	std::string name;
@@ -113,7 +114,7 @@ struct Monom {
 		DEGREE = right_.DEGREE;
 		return *this;
 	}
-	friend std::ostream& operator<<(std::ostream& os, const Monom<T>& right_) {
+	friend std::ostream& operator<<(std::ostream& os, const Monom<T>& right_) {	//ONLY FOR COUT POLINOME!!!
 		if (right_.value() != T(0)) {
 			os << abs(right_.value());
 			size_t X = right_.DEGREE.getX(), Y = right_.DEGREE.getY(), Z = right_.DEGREE.getZ();
@@ -127,6 +128,7 @@ struct Monom {
 		}
 		return os;
 	}
+	//WITHOUT OPERATOR>>
 
 private:
 	T C;
@@ -149,7 +151,7 @@ public:
 	Polinome() : polinome(Monom<val_>()) {};
 	Polinome(const Monom<val_>& right_) : polinome(right_) {};
 	Polinome(const Polinome<val_>& right_) : polinome(right_.polinome) {};
-	Polinome(const List<Monom<val_>>& right_) : polinome(right_) {}
+	Polinome(const List<Monom<val_>>& right_) : polinome(right_) { SORT(); }
 	Polinome(const List<val_>& right_) : polinome(){
 		size_t sz = 0;
 		if(right_.size())
@@ -157,6 +159,7 @@ public:
 			polinome.push_back(Monom<val_>(*it,++sz));
 			if (it == right_.last()) break;
 		}
+		SORT();
 	}
 	Polinome(const size_t& sz) : polinome(sz, val_(0)) {};
 	~Polinome() {};
@@ -238,7 +241,8 @@ public:
 		while (true) {
 
 			if (*it1 == *it2) {
-				if (!(abs(((*it1).value() + (*it2).value()) - null_) <= std::numeric_limits<val_>::epsilon())) {
+				val_ otn_eps = std::max(std::abs((*it1).value()), std::abs((*it2).value())) <= std::numeric_limits<val_>::epsilon() ? std::numeric_limits<val_>::epsilon() : std::numeric_limits<val_>::epsilon() * std::max(std::abs((*it1).value()), std::abs((*it2).value()));
+				if (!(abs(((*it1).value() + (*it2).value()) - null_) <= otn_eps)) {
 					res.push_back(Monom<val_>((*it1).value() + (*it2).value(), (*it1).DEGREE.get()));
 				}
 				if (it1 == last() && it2 == right_.last()) { f1 = f2 = 0; break; };
@@ -336,7 +340,7 @@ public:
 			else if (raw_input[i] == '+' || raw_input[i] == '-') prepare.push_back((raw_input[i]=='+' ? "+" : "-"));
 			else {
 				std::string temp = "";
-				while (i < n && !oper(raw_input[i]) && raw_input[i] != ' ') {
+				while (i < n && (!oper(raw_input[i]) || (temp.size() && (temp.back()=='e' || temp.back() == 'E'))) && raw_input[i] != ' ') {
 					temp += raw_input[i];
 					++i;
 				}
@@ -354,7 +358,7 @@ public:
 			if (lex.size() == 1 && oper(lex.at(0))) {
 				post.push_back({ 1,lex });
 			}
-			else if (all_Nums(lex)) {
+			else if (all_Nums(lex) || lex.at(0)=='.') {
 				post.push_back({ 2, lex });
 			}
 			else {
@@ -462,3 +466,13 @@ public:
 		return is;
 	}
 };
+
+template<class val_>
+Polinome<val_> operator*(const val_& left_, const Polinome<val_>& right_) {
+	Polinome<val_> res = Polinome<val_>(right_);
+	for (auto it = res.begin();; ++it) {
+		(*it) = (*it) * left_;
+		if (it == res.last())break;
+	}
+	return res;
+}

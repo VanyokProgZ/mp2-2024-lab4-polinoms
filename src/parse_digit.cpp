@@ -222,9 +222,6 @@ double re_ans(std::string& s) {
 	}
 	return ans * mn;
 }
-
-
-
 double parser_My(std::string& s) {
 	std::string err = "";
 	if (!dfs(s, 0, 1)) {

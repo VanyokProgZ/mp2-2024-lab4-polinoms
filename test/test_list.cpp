@@ -289,13 +289,13 @@ TEST(List, correct_operator_plus_with_empty) {
 	List<int> a = { 1,2,3,4,5 };
 	List<int> b = { };
 	ASSERT_EQ(a, a + b);
-	ASSERT_EQ(a+b, a );
+	ASSERT_EQ(b+a, a );
 }
 TEST(List, correct_operator_plus_with_two_empty) {
 	List<int> a = { };
 	List<int> b = { };
 	ASSERT_EQ(a, a + b);
-	ASSERT_EQ(a + b, a);
+	ASSERT_EQ(b + a, a);
 }
 TEST(List, can_pop_front) {
 	List<int> a = { 19,17 };
@@ -472,4 +472,27 @@ TEST(List, correct_merge_sort_empty) {
 	List<int> b = { };
 	a.merge_sort();
 	ASSERT_EQ(a, b);
+}
+TEST(List_iterator, correct_razimenovanie) {
+	List<int> a = { 1,2 };
+	ASSERT_EQ(*(a.begin()), 1);
+	ASSERT_EQ(*(a.last()), 2);
+}
+TEST(List_iterator, correct_plus_plus) {
+	List<int> a = { 1,2,3,4 };
+	auto it = a.begin();
+	int i = 1;
+	for (;; ++it) {
+		ASSERT_EQ(*it, i++);
+		if (it == a.last())break;
+	}
+}
+TEST(List_iterator, correct_minus_minus) {
+	List<int> a = { 1,2,3,4 };
+	auto it = a.last();
+	int i = 4;
+	for (;; --it) {
+		ASSERT_EQ(*it, i--);
+		if (it == a.begin())break;
+	}
 }
