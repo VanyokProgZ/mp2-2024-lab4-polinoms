@@ -152,6 +152,7 @@ public:
 	Polinome(const Monom<val_>& right_) : polinome(right_) {};
 	Polinome(const Polinome<val_>& right_) : polinome(right_.polinome) {};
 	Polinome(const List<Monom<val_>>& right_) : polinome(right_) { make_uniq(); }
+	Polinome(Polinome&& right_) : polinome(std::move(right_.polinome)) { }
 	Polinome(const List<val_>& right_) : polinome(){
 		size_t sz = 0;
 		if(right_.size())
@@ -221,6 +222,10 @@ public:
 	Polinome& operator=(const Polinome& right_) {
 		if (&right_ == this)return *this;
 		polinome.operator=(right_.polinome);
+		return *this;
+	}
+	Polinome& operator=(Polinome&& right_) {
+		polinome.operator=(std::move(right_.polinome));
 		return *this;
 	}
 	Polinome operator*(const val_& right_)const {

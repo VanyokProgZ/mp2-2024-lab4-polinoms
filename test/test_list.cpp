@@ -215,6 +215,30 @@ TEST(List, operator_breckets_correct_get) {
 	List<int> a = { 1,2,3,4,5,6 };
 	ASSERT_EQ(a[3], 4);
 }
+TEST(List, can_move_cstrct) {
+	List<int> a = { 1,2,3,4,5 };
+	List<int> b = { 6,7,8,9,10 };
+	ASSERT_NO_THROW(List<int> d = std::move(a + b));
+}
+TEST(List, move_cstrct) {
+	List<int> a = { 1,2,3,4,5 };
+	List<int> b = { 6,7,8,9,10 };
+	List<int> c = { 1,2,3,4,5,6,7,8,9,10 };
+	List<int> d = std::move(a + b);
+	ASSERT_EQ(d, c);
+}
+TEST(List, can_move_op) {
+	List<int> a = { 1,2,3,4,5 };
+	List<int> b = { 6,7,8,9,10 };
+	List<int> c;
+	ASSERT_NO_THROW(c = std::move(a + b));
+}
+TEST(List, move_op) {
+	List<int> a = { 1,2,3,4,5 };
+	List<int> b = { 6,7,8,9,10 };
+	List<int> c;
+	ASSERT_EQ(c = std::move(a + b), List<int>({1,2,3,4,5,6,7,8,9,10}));
+}
 TEST(List, operator_breckets_correct_set) {
 	List<int> a = { 1,2,3,4,5,6 };
 	a[3] = 2008;

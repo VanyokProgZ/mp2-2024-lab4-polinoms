@@ -836,6 +836,62 @@ TEST(Polinome, operator_mul_c) {
 	Polinome<int> b1(a1);
 	ASSERT_EQ(c, b1);
 }
+TEST(Polinome, can_move_cstrct) {
+	List<Monom<int>> a;
+	Monom<int> g(21, 32);
+	a.push_back(g);
+	g = Monom<int>(-21, 20);
+	a.push_back(g);
+	g = Monom<int>(21, 40);
+	a.push_back(g);
+	Polinome<int> b(a);
+	ASSERT_NO_THROW(Polinome<int> d = std::move(b + b));
+}
+TEST(Polinome, move_cstrct) {
+	List<Monom<int>> a;
+	Monom<int> g(21, 32);
+	a.push_back(g);
+	g = Monom<int>(-21, 20);
+	a.push_back(g);
+	g = Monom<int>(21, 40);
+	a.push_back(g);
+	Polinome<int> b(a);
+	List<Monom<int>> a1;
+	Monom<int> g1(42, 32);
+	a1.push_back(g1);
+	g1 = Monom<int>(-42, 20);
+	a1.push_back(g1);
+	g1 = Monom<int>(42, 40);
+	a1.push_back(g1);
+	Polinome<int> b1(a1);
+	Polinome<int> d = std::move(b + b);
+	ASSERT_EQ(d, b1);
+}
+TEST(Polinome, can_move_op) {
+	List<Monom<int>> a;
+	Monom<int> g(21, 32);
+	a.push_back(g);
+	g = Monom<int>(-21, 20);
+	a.push_back(g);
+	g = Monom<int>(21, 40);
+	a.push_back(g);
+	Polinome<int> b(a);
+	Polinome<int> c;
+	ASSERT_NO_THROW(c = std::move(b+b));
+}
+TEST(Polinome, move_op) {
+	List<Monom<int>> a;
+	Monom<int> g(21, 32);
+	a.push_back(g);
+	g = Monom<int>(-21, 20);
+	a.push_back(g);
+	g = Monom<int>(21, 40);
+	a.push_back(g);
+	Polinome<int> b(a);
+	Polinome<int> c;
+	c = std::move(b+b - b);
+	ASSERT_EQ(c, b);
+}
 TEST(Polinome, operator_mul_c_left) {
 	List<Monom<int>> a;
 	Monom<int> g(21, 32);
@@ -893,6 +949,20 @@ TEST(Polinome, operator_plus) {
 	auto g1 = b * 2;
 	g1.SORT();
 	b.SORT();
+	Polinome<int> c = b + b;
+	ASSERT_EQ(g1, c);
+}
+TEST(Polinome, move_oper) {
+	List<Monom<int>> a;
+	Monom<int> g(21, 32);
+	a.push_back(g);
+	g = Monom<int>(-21, 20);
+	a.push_back(g);
+	g = Monom<int>(21, 40);
+	a.push_back(g);
+	Polinome<int> b(a);
+	Polinome<int> g1;
+	g1 = b + b;
 	Polinome<int> c = b + b;
 	ASSERT_EQ(g1, c);
 }

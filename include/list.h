@@ -124,6 +124,11 @@ public:
 			head = new node();
 		}
 	}
+	List(List&& right_): head(right_.head), pFirst(right_.pFirst),pLast(right_.pLast) {
+		right_.head = nullptr;
+		right_.pFirst = nullptr;
+		right_.pLast = nullptr;
+	}
 	List(const val_& right_) {
 		head = new node();
 		pFirst = nullptr;
@@ -139,12 +144,14 @@ public:
 		this->push_back(right_);
 	}
 	~List() {
-		this_node = head->next;
-		while (head != nullptr) {
-			delete head;
-			head = this_node;
-			if(head!=nullptr)
-				this_node = head->next;
+		if (head != nullptr) {
+			this_node = head->next;
+			while (head != nullptr) {
+				delete head;
+				head = this_node;
+				if (head != nullptr)
+					this_node = head->next;
+			}
 		}
 	}
 //---------------------------------------
@@ -251,6 +258,18 @@ public:
 		return res;
 	}
 	List<val_> operator-(const List& right_) = delete;
+	List& operator=(List&& right_) noexcept {
+		if (this != &right_) {
+			clear();
+			head = right_.head;
+			pFirst = right_.pFirst;
+			pLast = right_.pLast;
+			right_.head = nullptr;
+			right_.pFirst = nullptr;
+			right_.pLast = nullptr;
+		}
+		return *this;
+	}
 	List& operator=(const List& right_) {
 		if (this == &right_) {
 			return *this;
